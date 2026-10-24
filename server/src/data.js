@@ -1,14 +1,26 @@
 // Data access layer with two modes:
-//   postgis   - PostgreSQL + PostGIS (normal mode; uses ST_DWithin and spatial ordering)
-//   fallback  - in-memory copy of the SAMPLE seed data queried with the Haversine formula,
-//               used automatically when no database is reachable (local demos, tests).
+//   postgis   - PostgreSQL + PostGIS (normal mode; geometry column queried via
+//               geography casts so distances and radius filters work in metres)
+//   fallback  - READ-ONLY, in-memory copy of the SAMPLE seed data queried with
+//               the Haversine formula, used automatically when no database is
+//               reachable. Clearly degraded: searches work, but ALL writes are
+//               refused with 503 and admin login only works if a demo admin was
+//               explicitly configured via SEED_ADMIN_EMAIL + SEED_ADMIN_PASSWORD.
 const bcrypt = require('bcrypt');
 const pool = require('./db');
 const { nearbyFacilities } = require('./utils/nearby');
 const seedData = require('../db/seed-data.json');
 
 let mode = 'fallback';
+// In-memory read-only store for fallback mode (deep copy; the seed file is never mutated).
 let mem = null;
+
+// Error helper: refused operation in degraded mode.
+function degraded() {
+  const err = new Error('Database unavailable: running in read-only SAMPLE demo mode. Changes are not saved.');
+  err.status = 503;
+  return err;
+}
 
 async function init() {
   try {
@@ -18,16 +30,24 @@ async function init() {
   } catch (err) {
     mode = 'fallback';
     mem = {
-      nextId: seedData.length + 1,
       facilities: seedData.map((f, i) => ({
         id: i + 1, ...f, status: 'approved', verified: true, created_at: new Date().toISOString(),
       })),
       admins: [],
     };
-    console.warn('[data] WARNING: no database reachable - running in in-memory SAMPLE demo mode.');
-    const password = process.env.SEED_ADMIN_PASSWORD || 'sample-admin-password';
-    const email = process.env.SEED_ADMIN_EMAIL || 'admin@example.com';
-    mem.admins.push({ id: 1, email, password_hash: bcrypt.hashSync(password, 10) });
+    console.warn('[data] WARNING: no database reachable - running in READ-ONLY SAMPLE demo mode.');
+    console.warn('[data] Searches work against the sample data; submissions and admin changes are refused (503).');
+    // Demo admin exists ONLY when explicitly configured - there is no default password.
+    if (process.env.SEED_ADMIN_EMAIL && process.env.SEED_ADMIN_PASSWORD) {
+      mem.admins.push({
+        id: 1,
+        email: process.env.SEED_ADMIN_EMAIL,
+        password_hash: bcrypt.hashSync(process.env.SEED_ADMIN_PASSWORD, 10),
+      });
+      console.warn(`[data] Demo admin enabled for ${process.env.SEED_ADMIN_EMAIL} (view-only; writes are refused in demo mode).`);
+    } else {
+      console.warn('[data] Admin login disabled in demo mode (SEED_ADMIN_EMAIL/SEED_ADMIN_PASSWORD not set).');
+    }
   }
   return mode;
 }
@@ -36,6 +56,7 @@ function getMode() {
   return mode;
 }
 
+// Public: approved facilities near a point, ordered by distance, distance in km.
 async function findNearby({ lat, lng, type, radiusKm }) {
   if (mode === 'fallback') {
     const approved = mem.facilities.filter((f) => f.status === 'approved');
@@ -45,53 +66,52 @@ async function findNearby({ lat, lng, type, radiusKm }) {
     }));
   }
   const radiusM = radiusKm * 1000;
+  // The geom column is geometry; casts to geography give metre-accurate
+  // ST_DWithin / ST_Distance, served by the functional GiST index.
+  // $1=lng $2=lat $3=radius metres $4=type (optional). Parameterized throughout.
+  const point = 'ST_SetSRID(ST_MakePoint($1, $2), 4326)';
   const sql = `
     SELECT id, name, type, address, phone, verified,
-           ROUND((ST_Distance(geom, ST_MakePoint($1, $2)::geography) / 1000)::numeric, 2) AS distance_km
+           ROUND((ST_Distance(geom::geography, ${point}::geography) / 1000)::numeric, 2) AS distance_km
     FROM facilities
     WHERE status = 'approved'
-      AND ST_DWithin(geom, ST_MakePoint($1, $2)::geography, $3)
+      AND ST_DWithin(geom::geography, ${point}::geography, $3)
       AND ($4::text IS NULL OR type = $4)
-    ORDER BY geom <-> ST_MakePoint($1, $2)::geography`;
+    ORDER BY geom::geography <-> ${point}::geography`;
   const { rows } = await pool.query(sql, [lng, lat, radiusM, type && type !== 'all' ? type : null]);
   return rows;
 }
 
+// Public: submit a new facility suggestion (status = pending).
 async function createFacility({ name, type, address, phone, lat, lng }) {
-  if (mode === 'fallback') {
-    const row = { id: mem.nextId++, name, type, address, phone: phone || null, lat, lng, status: 'pending', verified: false, created_at: new Date().toISOString() };
-    mem.facilities.push(row);
-    return { id: row.id, status: 'pending' };
-  }
+  if (mode === 'fallback') throw degraded();
   const { rows } = await pool.query(
     `INSERT INTO facilities (name, type, address, phone, geom, status, verified)
-     VALUES ($1, $2, $3, $4, ST_MakePoint($5, $6)::geography, 'pending', false)
+     VALUES ($1, $2, $3, $4, ST_SetSRID(ST_MakePoint($5, $6), 4326), 'pending', false)
      RETURNING id, status`,
     [name, type, address, phone || null, lng, lat]
   );
   return rows[0];
 }
 
+// Admin: list facilities by status.
 async function listByStatus(status) {
   if (mode === 'fallback') {
-    return mem.facilities.filter((f) => f.status === status);
+    if (status === 'approved') return mem.facilities.filter((f) => f.status === 'approved');
+    return []; // pending/rejected lists need the database
   }
   const { rows } = await pool.query(
     `SELECT id, name, type, address, phone, status, verified,
-            ST_Y(geom::geometry) AS lat, ST_X(geom::geometry) AS lng, created_at
+            ST_Y(geom) AS lat, ST_X(geom) AS lng, created_at
      FROM facilities WHERE status = $1 ORDER BY created_at DESC`,
     [status]
   );
   return rows;
 }
 
+// Admin: approve -> status approved, verified true.
 async function approveFacility(id) {
-  if (mode === 'fallback') {
-    const f = mem.facilities.find((x) => x.id === id);
-    if (!f) return null;
-    f.status = 'approved'; f.verified = true;
-    return f;
-  }
+  if (mode === 'fallback') throw degraded();
   const { rows } = await pool.query(
     `UPDATE facilities SET status = 'approved', verified = true WHERE id = $1 RETURNING id, status, verified`,
     [id]
@@ -99,13 +119,9 @@ async function approveFacility(id) {
   return rows[0] || null;
 }
 
+// Admin: reject -> status rejected.
 async function rejectFacility(id) {
-  if (mode === 'fallback') {
-    const f = mem.facilities.find((x) => x.id === id);
-    if (!f) return null;
-    f.status = 'rejected'; f.verified = false;
-    return f;
-  }
+  if (mode === 'fallback') throw degraded();
   const { rows } = await pool.query(
     `UPDATE facilities SET status = 'rejected', verified = false WHERE id = $1 RETURNING id, status`,
     [id]
@@ -113,16 +129,12 @@ async function rejectFacility(id) {
   return rows[0] || null;
 }
 
+// Admin: edit facility details.
 async function updateFacility(id, { name, type, address, phone, lat, lng }) {
-  if (mode === 'fallback') {
-    const f = mem.facilities.find((x) => x.id === id);
-    if (!f) return null;
-    Object.assign(f, { name, type, address, phone: phone || null, lat, lng });
-    return f;
-  }
+  if (mode === 'fallback') throw degraded();
   const { rows } = await pool.query(
     `UPDATE facilities
-     SET name = $2, type = $3, address = $4, phone = $5, geom = ST_MakePoint($6, $7)::geography
+     SET name = $2, type = $3, address = $4, phone = $5, geom = ST_SetSRID(ST_MakePoint($6, $7), 4326)
      WHERE id = $1
      RETURNING id, name, type, address, phone, status, verified`,
     [id, name, type, address, phone || null, lng, lat]
@@ -130,6 +142,7 @@ async function updateFacility(id, { name, type, address, phone, lat, lng }) {
   return rows[0] || null;
 }
 
+// Admin login: look up admin by email.
 async function findAdminByEmail(email) {
   if (mode === 'fallback') {
     return mem.admins.find((a) => a.email === email) || null;
