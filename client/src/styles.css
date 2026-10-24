@@ -51,3 +51,39 @@ body {
 .chip--active { background: var(--blue); color: #fff; }
 
 .results { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+.card { border: 1px solid #dbe4f0; border-radius: 14px; padding: 14px; box-shadow: 0 1px 3px rgba(18,35,61,0.08); }
+.card__top { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+.card__name { margin: 0; font-size: 1.1rem; }
+.card__meta { display: flex; align-items: center; gap: 8px; margin: 8px 0 4px; flex-wrap: wrap; }
+.card__distance { color: var(--blue-dark); font-weight: 700; }
+.card__address { color: var(--muted); margin: 4px 0 12px; }
+.card__actions { display: flex; gap: 8px; }
+
+.tag { font-size: 0.75rem; border-radius: 999px; padding: 2px 10px; background: var(--blue-light); color: var(--blue-dark); }
+.tag--verified { background: #e3f5e9; color: var(--ok); font-weight: 700; }
+.tag--sample { background: #fff3cd; color: #8a6d00; }
+.tag--hospital, .tag--blood_bank, .tag--pharmacy, .tag--ambulance { background: var(--blue-light); }
+
+.status { border-radius: 10px; padding: 12px; font-size: 0.95rem; }
+.status--info { background: var(--blue-light); color: var(--blue-dark); }
+.status--error { background: #fdecec; color: var(--danger); }
+.status--empty { background: #f4f6fa; color: var(--muted); }
+.status--ok { background: #e3f5e9; color: var(--ok); }
+
+.suggest-wrap { margin-top: 16px; text-align: center; }
+.suggest { display: flex; flex-direction: column; gap: 10px; text-align: left; border: 1px solid #dbe4f0; border-radius: 14px; padding: 16px; margin-top: 8px; }
+.suggest h2 { margin: 0; font-size: 1.2rem; color: var(--blue); }
+.suggest__hint { color: var(--muted); font-size: 0.9rem; margin: 0; }
+.suggest label { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; color: var(--muted); }
+
+.admin-head { display: flex; align-items: center; justify-content: space-between; }
+.admin-head h1 { color: var(--blue); font-size: 1.6rem; }
+.table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.9rem; }
+.table th { text-align: left; color: var(--muted); border-bottom: 2px solid var(--blue-light); padding: 8px 6px; }
+.table td { border-bottom: 1px solid #eef2f8; padding: 8px 6px; vertical-align: top; }
+.table__actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.table__empty { color: var(--muted); text-align: center; padding: 20px; }
+.edit-grid { display: grid; gap: 8px; }
+
+.footer { margin-top: 24px; text-align: center; font-size: 0.9rem; }
+.footer a { color: var(--blue); }
