@@ -1,0 +1,53 @@
+/* NearAid theme: white-and-blue, mobile-first. */
+:root {
+  --blue: #1565d8;
+  --blue-dark: #0e4fa8;
+  --blue-light: #e8f1fd;
+  --text: #12233d;
+  --muted: #5b6b82;
+  --danger: #c62828;
+  --ok: #1b7f3b;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: #fff;
+  color: var(--text);
+}
+.page { max-width: 640px; margin: 0 auto; padding: 16px; }
+.page--narrow { max-width: 420px; }
+
+.hero { text-align: center; padding: 24px 8px; }
+.hero h1 { color: var(--blue); font-size: 2.2rem; margin: 0 0 8px; }
+.hero__sub { color: var(--text); margin: 0 0 4px; }
+.hero__demo { color: var(--muted); font-size: 0.85rem; margin: 0 0 16px; }
+
+.btn {
+  display: inline-block; border: 1px solid var(--blue); border-radius: 10px;
+  background: #fff; color: var(--blue); padding: 10px 16px; font-size: 1rem;
+  cursor: pointer; text-decoration: none; text-align: center;
+}
+.btn--primary, .btn--big { background: var(--blue); color: #fff; }
+.btn--primary:hover, .btn--big:hover { background: var(--blue-dark); }
+.btn--big { display: block; width: 100%; padding: 18px; font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; }
+.btn--small { padding: 6px 10px; font-size: 0.85rem; }
+.btn--danger { border-color: var(--danger); color: var(--danger); }
+.btn--call { flex: 1; padding: 14px; font-weight: 700; }
+.btn--call:disabled { border-color: #b9c4d4; color: #b9c4d4; cursor: not-allowed; }
+.btn--directions { flex: 1; padding: 14px; }
+.link { background: none; border: none; color: var(--blue); cursor: pointer; text-decoration: underline; font-size: 0.95rem; padding: 4px; }
+
+.manual { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.manual input, .suggest input, .suggest select, .edit-grid input, .edit-grid select {
+  padding: 10px; border: 1px solid #c7d3e4; border-radius: 8px; font-size: 1rem; width: 100%;
+}
+
+.chips { display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; }
+.chip {
+  border: 1px solid var(--blue); background: #fff; color: var(--blue);
+  border-radius: 999px; padding: 8px 14px; white-space: nowrap; cursor: pointer; font-size: 0.95rem;
+}
+.chip--active { background: var(--blue); color: #fff; }
+
+.results { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
