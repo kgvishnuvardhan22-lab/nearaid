@@ -13,6 +13,10 @@ export default function SuggestForm({ location }) {
 
   async function submit(e) {
     e.preventDefault();
+    if (!location) {
+      setStatus({ kind: 'error', text: 'Set your location first (use the button above), so we know where the facility is.' });
+      return;
+    }
     setBusy(true);
     setStatus(null);
     try {
@@ -21,8 +25,8 @@ export default function SuggestForm({ location }) {
         type: form.type,
         address: form.address.trim(),
         phone: form.phone.trim() || undefined,
-        lat: location ? location.lat : 13.0827,
-        lng: location ? location.lng : 80.2707,
+        lat: location.lat,
+        lng: location.lng,
       });
       setStatus({ kind: 'ok', text: res.message });
       setForm({ name: '', type: 'hospital', address: '', phone: '' });
