@@ -1,11 +1,11 @@
-// Endpoint-level checks in fallback (in-memory) mode - no database needed.
+// Endpoint-level checks in fallback (in-memory, read-only) mode - no database needed.
 process.env.JWT_SECRET = 'test-secret-for-jest';
 const request = require('supertest');
 const data = require('../src/data');
 
 let app;
 beforeAll(async () => {
-  await data.init();
+  await data.init(); // no DB available in tests -> read-only fallback mode
   app = require('../src/app');
 });
 
@@ -24,9 +24,28 @@ describe('GET /api/facilities/nearby', () => {
   });
 });
 
+describe('POST /api/facilities in degraded mode', () => {
+  test('validation errors still return 400', async () => {
+    const res = await request(app).post('/api/facilities').send({ name: 'x', type: 'nope', address: 'x', lat: 0, lng: 0 });
+    expect(res.status).toBe(400);
+  });
+
+  test('valid submissions are refused with 503 (never fake-saved)', async () => {
+    const res = await request(app).post('/api/facilities').send({
+      name: 'SAMPLE Jest Pharmacy', type: 'pharmacy', address: '1 Test Lane, Chennai', lat: 13.05, lng: 80.24,
+    });
+    expect(res.status).toBe(503);
+  });
+});
+
 describe('admin auth', () => {
   test('rejects admin routes without a token', async () => {
     const res = await request(app).get('/api/admin/pending');
+    expect(res.status).toBe(401);
+  });
+
+  test('admin login is disabled in demo mode unless explicitly configured', async () => {
+    const res = await request(app).post('/api/admin/login').send({ email: 'admin@example.com', password: 'sample-admin-password' });
     expect(res.status).toBe(401);
   });
 });
