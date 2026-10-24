@@ -28,7 +28,7 @@ async function seed() {
         // Parameterized query - values are never concatenated into SQL.
         await client.query(
           `INSERT INTO facilities (name, type, address, phone, geom, status, verified)
-           VALUES ($1, $2, $3, $4, ST_MakePoint($5, $6)::geography, 'approved', true)`,
+           VALUES ($1, $2, $3, $4, ST_SetSRID(ST_MakePoint($5, $6), 4326), 'approved', true)`,
           [f.name, f.type, f.address, f.phone, f.lng, f.lat]
         );
       }
