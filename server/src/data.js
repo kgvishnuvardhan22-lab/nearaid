@@ -72,7 +72,7 @@ async function findNearby({ lat, lng, type, radiusKm }) {
   const point = 'ST_SetSRID(ST_MakePoint($1, $2), 4326)';
   const sql = `
     SELECT id, name, type, address, phone, verified,
-           ROUND((ST_Distance(geom::geography, ${point}::geography) / 1000)::numeric, 2) AS distance_km
+           ROUND((ST_Distance(geom::geography, ${point}::geography) / 1000)::numeric, 2)::float8 AS distance_km
     FROM facilities
     WHERE status = 'approved'
       AND ST_DWithin(geom::geography, ${point}::geography, $3)
