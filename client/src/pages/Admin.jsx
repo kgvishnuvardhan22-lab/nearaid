@@ -110,10 +110,10 @@ export default function Admin() {
               <EditRow key={f.id} facility={f} onSave={saveEdit} onCancel={() => setEditingId(null)} />
             ) : (
               <tr key={f.id}>
-                <td>{f.name}{f.verified && <span className="tag tag--verified"> ✓</span>}</td>
-                <td>{TYPE_LABEL[f.type] || f.type}</td>
-                <td>{f.address}</td>
-                <td className="table__actions">
+                <td data-label="Name">{f.name}{f.verified && <span className="tag tag--verified"> ✓</span>}</td>
+                <td data-label="Type">{TYPE_LABEL[f.type] || f.type}</td>
+                <td data-label="Address">{f.address}</td>
+                <td className="table__actions" data-label="Actions">
                   {tab === 'pending' && <button className="btn btn--small btn--primary" onClick={() => act(api.approve, f.id)}>Approve</button>}
                   <button className="btn btn--small" onClick={() => setEditingId(f.id)}>Edit</button>
                   {tab === 'pending'
@@ -124,7 +124,7 @@ export default function Admin() {
             )
           )}
           {rows.length === 0 && !error && (
-            <tr><td colSpan={4} className="table__empty">{tab === 'pending' ? 'Nothing waiting for review.' : 'No verified facilities yet.'}</td></tr>
+            <tr><td colSpan={4} className="table__empty" data-label="">{tab === 'pending' ? 'Nothing waiting for review.' : 'No verified facilities yet.'}</td></tr>
           )}
         </tbody>
       </table>

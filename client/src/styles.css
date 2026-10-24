@@ -43,7 +43,7 @@ body {
   padding: 10px; border: 1px solid #c7d3e4; border-radius: 8px; font-size: 1rem; width: 100%;
 }
 
-.chips { display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; padding: 8px 0; }
 .chip {
   border: 1px solid var(--blue); background: #fff; color: var(--blue);
   border-radius: 999px; padding: 8px 14px; white-space: nowrap; cursor: pointer; font-size: 0.95rem;
@@ -87,3 +87,23 @@ body {
 
 .footer { margin-top: 24px; text-align: center; font-size: 0.9rem; }
 .footer a { color: var(--blue); }
+
+/* Mobile: admin table becomes stacked cards so no column is clipped. */
+@media (max-width: 640px) {
+  .table, .table thead, .table tbody, .table tr, .table td { display: block; width: 100%; }
+  .table thead { position: absolute; left: -9999px; }
+  .table tr {
+    border: 1px solid #dbe4f0; border-radius: 12px; margin-bottom: 12px;
+    padding: 10px 12px; box-shadow: 0 1px 3px rgba(18,35,61,0.08);
+  }
+  .table td { border: none; padding: 4px 0; }
+  .table td::before {
+    content: attr(data-label);
+    display: block; font-size: 0.72rem; text-transform: uppercase;
+    letter-spacing: 0.04em; color: var(--muted); margin-bottom: 1px;
+  }
+  .table td[data-label=""]::before { content: none; }
+  .table__actions { display: flex; gap: 8px; margin-top: 6px; }
+  .table__actions .btn { flex: 1; text-align: center; }
+  .edit-grid { grid-template-columns: 1fr; }
+}
