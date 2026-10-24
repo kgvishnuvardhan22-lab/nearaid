@@ -1,0 +1,23 @@
+-- NearAid database schema (PostgreSQL + PostGIS)
+-- Run with: psql -d nearaid -f db/schema.sql
+
+-- PostGIS adds geographic types, spatial indexes and distance functions.
+CREATE EXTENSION IF NOT EXISTS postgis;
+
+-- Facilities shown in search results.
+-- status: pending (public suggestion) -> approved or rejected by an admin.
+-- Only approved rows are returned by the public nearby API.
+CREATE TABLE IF NOT EXISTS facilities (
+  id          SERIAL PRIMARY KEY,
+  name        TEXT NOT NULL,
+  type        TEXT NOT NULL CHECK (type IN ('hospital', 'blood_bank', 'pharmacy', 'ambulance')),
+  address     TEXT NOT NULL,
+  phone       TEXT,                                   -- SAMPLE rows use non-callable placeholders
+  geom        geography(Point, 4326) NOT NULL,        -- lon/lat stored as a PostGIS point
+  status      TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  verified    BOOLEAN NOT NULL DEFAULT FALSE,         -- set true when an admin approves
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- GiST spatial index: makes ST_DWithin / nearest-neighbour queries fast.
+CREATE INDEX IF NOT EXISTS facilities_geom_gist ON facilities USING GIST (geom);
