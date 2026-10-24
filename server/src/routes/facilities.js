@@ -42,4 +42,33 @@ router.get(
   }
 );
 
+// POST /api/facilities  - public suggestion, stored as status=pending for admin review.
+router.post(
+  '/',
+  [
+    body('name').trim().isLength({ min: 3, max: 120 }).withMessage('name must be 3-120 characters'),
+    body('type').isIn(VALID_TYPES).withMessage('type must be one of: ' + VALID_TYPES.join(', ')),
+    body('address').trim().isLength({ min: 5, max: 250 }).withMessage('address must be 5-250 characters'),
+    body('phone').optional({ checkFalsy: true }).trim().isLength({ max: 30 }).withMessage('phone is too long'),
+    body('lat').isFloat({ min: -90, max: 90 }).withMessage('lat must be a number between -90 and 90'),
+    body('lng').isFloat({ min: -180, max: 180 }).withMessage('lng must be a number between -180 and 180'),
+  ],
+  async (req, res, next) => {
+    if (!checkValidation(req, res)) return;
+    try {
+      const created = await data.createFacility({
+        name: req.body.name,
+        type: req.body.type,
+        address: req.body.address,
+        phone: req.body.phone,
+        lat: Number(req.body.lat),
+        lng: Number(req.body.lng),
+      });
+      res.status(201).json({ message: 'Suggestion received - it will appear after admin review.', ...created });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
 module.exports = router;
