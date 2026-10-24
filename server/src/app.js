@@ -9,6 +9,11 @@ const data = require('./data');
 
 const app = express();
 
+// The API runs behind one proxy hop on Render (and Vercel's dev proxy locally).
+// Trusting the first hop makes req.ip the real client address, so the rate
+// limits below apply per visitor instead of globally to the shared proxy IP.
+app.set('trust proxy', 1);
+
 // CORS: only the configured frontend origin(s) may call the API from a browser.
 const origins = (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',').map((s) => s.trim());
 app.use(cors({ origin: origins }));
