@@ -21,3 +21,14 @@ CREATE TABLE IF NOT EXISTS facilities (
 
 -- GiST spatial index: makes ST_DWithin / nearest-neighbour queries fast.
 CREATE INDEX IF NOT EXISTS facilities_geom_gist ON facilities USING GIST (geom);
+-- Plain indexes for admin filtering.
+CREATE INDEX IF NOT EXISTS facilities_status_idx ON facilities (status);
+CREATE INDEX IF NOT EXISTS facilities_type_idx ON facilities (type);
+
+-- Admin users for the moderation panel. Passwords are stored as bcrypt hashes only.
+CREATE TABLE IF NOT EXISTS admins (
+  id            SERIAL PRIMARY KEY,
+  email         TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
