@@ -8,7 +8,10 @@ const bcrypt = require('bcrypt');
 const { Pool } = require('pg');
 const facilities = require('./seed-data.json');
 
-const pool = new Pool({
+const pool = new Pool(process.env.DATABASE_URL ? {
+  connectionString: process.env.DATABASE_URL,
+  max: 10,
+} : {
   host: process.env.PGHOST,
   port: Number(process.env.PGPORT || 5432),
   database: process.env.PGDATABASE,
