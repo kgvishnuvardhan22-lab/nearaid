@@ -2,10 +2,14 @@
 // the call button is disabled until the owner replaces them with verified numbers.
 const TYPE_LABEL = { hospital: 'Hospital', blood_bank: 'Blood Bank', pharmacy: 'Pharmacy', ambulance: 'Ambulance' };
 
+function isPlaceholderPhone(phone) {
+  return !phone || phone.includes('00000');
+}
 
 export default function FacilityCard({ facility }) {
   const { name, type, address, phone, distance_km, verified } = facility;
-    const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+  const samplePhone = isPlaceholderPhone(phone);
+  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
 
   return (
     <article className="card">
@@ -20,7 +24,13 @@ export default function FacilityCard({ facility }) {
       </p>
       <p className="card__address">{address}</p>
       <div className="card__actions">
-                  <a className="btn btn--call" href={`tel:${phone}`}>Call {phone}</a>
+        {samplePhone ? (
+          <button className="btn btn--call" disabled title="Sample placeholder - the owner will replace it with a verified number">
+            Call (sample number)
+          </button>
+        ) : (
+          <a className="btn btn--call" href={`tel:${phone}`}>Call {phone}</a>
+        )}
         <a className="btn btn--directions" href={directionsUrl} target="_blank" rel="noreferrer">Directions</a>
       </div>
     </article>
