@@ -50,19 +50,54 @@ export default function Home() {
       setError('This browser has no geolocation - enter your coordinates manually below.');
       return;
     }
+    // In-app browsers (WhatsApp, Instagram, etc.) often suppress the location
+    // permission prompt entirely.
+    const inApp = /WhatsApp|FBAN|FBAV|Instagram|Telegram|Line\//i.test(navigator.userAgent);
     setLoading(true);
+    // Chrome waits forever when the permission prompt is never answered, and its
+    // own timeout only starts after permission is granted. This watchdog makes
+    // sure the user always ends up with a working fallback instead of a button
+    // stuck on "Searching...".
+    let settled = false;
+    const watchdog = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      setLoading(false);
+      setShowManual(true);
+      setError(
+        "Still waiting for your browser's location. Check for a location permission prompt near the address bar." +
+          (inApp ? ' If you opened this inside an app, use the menu to open NearAid in Chrome or Safari instead.' : '') +
+          ' You can also enter your coordinates manually below.'
+      );
+    }, 12000);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(watchdog);
         const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude, source: 'gps' };
         setLocation(loc);
         search(loc, category);
       },
-      () => {
+      (err) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(watchdog);
         setLoading(false);
         setShowManual(true);
-        setError('Location permission was denied. Enter your coordinates manually, or allow location access and try again.');
+        if (err.code === err.PERMISSION_DENIED) {
+          setError(
+            'Location permission was denied. Allow location access for this site in your browser settings, then try again.' +
+              (inApp ? ' If you opened this inside an app, open NearAid in Chrome or Safari first.' : '') +
+              ' You can also enter your coordinates manually below.'
+          );
+        } else if (err.code === err.TIMEOUT) {
+          setError('Getting your location timed out. Check that location (GPS) is turned on and try again, or enter your coordinates manually below.');
+        } else {
+          setError('Your position could not be determined. Check that location (GPS) is turned on and try again, or enter your coordinates manually below.');
+        }
       },
-      { timeout: 10000 }
+      { timeout: 15000, maximumAge: 60000 }
     );
   }
 
