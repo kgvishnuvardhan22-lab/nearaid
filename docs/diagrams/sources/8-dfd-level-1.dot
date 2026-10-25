@@ -1,0 +1,35 @@
+digraph DFD1 {
+  rankdir=LR; bgcolor=white; pad=0.3; nodesep=0.5; ranksep=1.0;
+  labelloc="t"; label="NearAid - DFD Level 1"; fontsize=18;
+  node [fontname="Helvetica"]; edge [fontname="Helvetica" fontsize=10];
+
+  visitor [shape=box style=filled fillcolor="#dbeafe" label="Public Visitor"];
+  admin [shape=box style=filled fillcolor="#dbeafe" label="Admin"];
+
+  p1 [shape=circle style=filled fillcolor="#ffffff" width=1.7 fixedsize=true label="1.0\nSearch Nearby\nFacilities"];
+  p2 [shape=circle style=filled fillcolor="#ffffff" width=1.7 fixedsize=true label="2.0\nSuggest\nFacility"];
+  p3 [shape=circle style=filled fillcolor="#ffffff" width=1.7 fixedsize=true label="3.0\nAuthenticate\nAdmin"];
+  p4 [shape=circle style=filled fillcolor="#ffffff" width=1.7 fixedsize=true label="4.0\nModerate\nSubmissions"];
+
+  d1 [shape=plain label=<<TABLE BORDER="0" CELLBORDER="0"><TR><TD SIDES="TB">D1 &nbsp; Admins</TD></TR></TABLE>>];
+  d2 [shape=plain label=<<TABLE BORDER="0" CELLBORDER="0"><TR><TD SIDES="TB">D2 &nbsp; Facilities</TD></TR></TABLE>>];
+
+  d3 [shape=box label="D3 SAMPLE rows (read-only demo)"];
+  d3 -> p1 [label="SAMPLE facilities (fallback)"];
+  visitor -> p1 [label="location, category, radius"];
+  p1 -> visitor [label="nearby facility results"];
+  d2 -> p1 [label="approved facilities"];
+
+  visitor -> p2 [label="facility suggestion"];
+  p2 -> visitor [label="submission confirmation"];
+  p2 -> d2 [label="new facility (status: pending)"];
+
+  admin -> p3 [label="login credentials"];
+  d1 -> p3 [label="email + bcrypt hash"];
+  p3 -> admin [label="JWT session"];
+
+  admin -> p4 [label="moderation decisions"];
+  p4 -> d2 [label="status / detail updates"];
+  d2 -> p4 [label="pending & verified lists"];
+  p4 -> admin [label="pending & verified lists"];
+}

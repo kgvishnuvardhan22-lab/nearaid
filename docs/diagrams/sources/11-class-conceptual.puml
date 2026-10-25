@@ -1,0 +1,75 @@
+@startuml NearAid-Class
+title NearAid - Conceptual Class Diagram\nLogical services map to JavaScript modules/functions, not implemented ES classes
+skinparam classAttributeIconSize 0
+
+enum FacilityType {
+  hospital
+  blood_bank
+  pharmacy
+  ambulance
+}
+enum FacilityStatus {
+  pending
+  approved
+  rejected
+}
+
+class Facility {
+  +id : int
+  +name : string
+  +type : FacilityType
+  +address : string
+  +phone : string
+  +geom : Point (SRID 4326)
+  +status : FacilityStatus
+  +verified : boolean
+  +createdAt : timestamp
+}
+
+class Admin {
+  +id : int
+  +email : string
+  +passwordHash : string
+  +createdAt : timestamp
+}
+
+class NearbySearchQuery {
+  +lat : double  (-90..90)
+  +lng : double  (-180..180)
+  +type : FacilityType | all
+  +radiusKm : double  (0.1..50, default 5)
+  +validate() : void
+}
+
+class FacilityRepository {
+  +findNearby(q : NearbySearchQuery) : Facility[]  // PostGIS ST_DWithin + distance order
+  +insertPending(f : Facility) : int
+  +approve(id : int) : void
+  +reject(id : int) : void
+  +update(id : int, fields) : void
+  +listPending() : Facility[]
+  +listApproved() : Facility[]
+}
+
+class Haversine {
+  +{static} distanceKm(lat1, lng1, lat2, lng2) : double
+}
+
+class AuthService {
+  +login(email, password) : JWT (2h)  // bcrypt compare
+  +verifyToken(token) : Admin
+}
+
+class FallbackStore {
+  +sampleRows : Facility[]  // 30 SAMPLE Chennai rows, read-only
+  +findNearby(q : NearbySearchQuery) : Facility[]  // uses Haversine
+}
+
+FacilityRepository ..> Facility : manages
+FacilityRepository ..> NearbySearchQuery : uses
+FallbackStore ..> Haversine : uses
+FallbackStore ..> NearbySearchQuery : uses
+AuthService ..> Admin : authenticates
+Facility --> FacilityType
+Facility --> FacilityStatus
+@enduml

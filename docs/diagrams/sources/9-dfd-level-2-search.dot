@@ -1,0 +1,27 @@
+digraph DFD2 {
+  rankdir=TB; bgcolor=white; pad=0.3; nodesep=0.45; ranksep=0.9;
+  labelloc="t"; label="NearAid - DFD Level 2 (explodes Process 1.0 Search Nearby Facilities)"; fontsize=18;
+  node [fontname="Helvetica"]; edge [fontname="Helvetica" fontsize=10];
+
+  visitor [shape=box style=filled fillcolor="#dbeafe" label="Public Visitor"];
+
+  p11 [shape=circle style=filled fillcolor="#ffffff" width=1.9 fixedsize=true label="1.1\nValidate Search\nParameters"];
+  p12 [shape=circle style=filled fillcolor="#ffffff" width=1.9 fixedsize=true label="1.2\nCheck Database\nAvailability"];
+  p13 [shape=circle style=filled fillcolor="#ffffff" width=1.9 fixedsize=true label="1.3\nSpatial Query\n(PostGIS\nST_DWithin)"];
+  p14 [shape=circle style=filled fillcolor="#ffffff" width=1.9 fixedsize=true label="1.4\nHaversine Fallback\n(SAMPLE demo,\nread-only)"];
+  p15 [shape=circle style=filled fillcolor="#ffffff" width=1.9 fixedsize=true label="1.5\nFormat Results\n(distance km,\nverified, mode)"];
+
+  d2 [shape=plain label=<<TABLE BORDER="0" CELLBORDER="0"><TR><TD SIDES="TB">D2 &nbsp; Facilities</TD></TR></TABLE>>];
+  d3 [shape=plain label=<<TABLE BORDER="0" CELLBORDER="0"><TR><TD SIDES="TB">D3 &nbsp; SAMPLE rows (in-memory)</TD></TR></TABLE>>];
+
+  visitor -> p11 [label="location, category, radius"];
+  p11 -> p12 [label="valid query"];
+  p11 -> visitor [label="nearby result / validation error"];
+  p12 -> p13 [label="query (DB up)"];
+  p12 -> p14 [label="query (DB down)"];
+  d2 -> p13 [label="approved facilities\nwithin radius"];
+  d3 -> p14 [label="SAMPLE rows"];
+  p13 -> p15 [label="matching facilities + distance"];
+  p14 -> p15 [label="matching facilities + distance"];
+  p15 -> visitor [label="nearby facility results (mode: postgis / fallback)"];
+}

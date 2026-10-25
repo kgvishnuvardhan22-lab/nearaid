@@ -1,0 +1,35 @@
+@startuml NearAid-Sequence
+title NearAid - Sequence Diagram: Find Nearby Facilities
+
+actor "Public Visitor" as V
+participant "React Client" as C
+participant "Express API\n/api/facilities/nearby" as A
+participant "FacilityRepository" as R
+database "PostgreSQL + PostGIS" as DB
+participant "FallbackStore\n(Haversine)" as F
+
+V -> C : Tap "Find help near me"
+C -> C : navigator.geolocation.getCurrentPosition()
+alt Permission granted
+  C -> C : lat, lng
+else Permission denied
+  V -> C : Enter location manually
+end
+V -> C : Choose category chip (optional)
+C -> A : GET /nearby?lat&lng&type&radius
+A -> A : Validate params (lat -90..90, lng -180..180,\nradius 0.1-50 km, type)
+alt Database available
+  A -> R : findNearby(query)
+  R -> DB : SELECT ... WHERE status='approved'\nAND ST_DWithin(geom::geography, point, radius)\nORDER BY geom::geography <-> point
+  DB --> R : rows + distance
+  R --> A : facilities[]
+else Database unavailable
+  A -> F : findNearby(query)
+  F -> F : Haversine distanceKm() per SAMPLE row,\nfilter radius, sort
+  F --> A : facilities[] (mode = fallback)
+end
+A --> C : 200 { mode, count, results[] }
+C -> C : Render result cards\n(name, type, address, distance_km,\nverified badge, Call, Directions)
+C -> C : Save results to localStorage
+V -> C : Tap Call (tel:) or Directions (Maps link)
+@enduml

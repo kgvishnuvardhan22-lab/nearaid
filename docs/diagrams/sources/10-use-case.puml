@@ -1,0 +1,50 @@
+@startuml NearAid-UseCase
+left to right direction
+skinparam packageStyle rectangle
+title NearAid - Use Case Diagram
+
+actor "Public Visitor" as visitor
+actor "Admin" as admin
+
+rectangle "NearAid System" {
+  usecase "Find nearby facilities" as UC1
+  usecase "Detect device location" as UC1a
+  usecase "Enter location manually" as UC1b
+  usecase "Filter by category" as UC2
+  usecase "View facility card\n(distance, verified badge)" as UC3
+  usecase "Call facility (tel: link;\ndisabled for SAMPLE numbers)" as UC4
+  usecase "Get directions (Maps link)" as UC5
+  usecase "View cached results (offline)" as UC6
+  usecase "Suggest a facility" as UC7
+
+  usecase "Log in (email + password)" as UC8
+  usecase "View pending submissions" as UC9
+  usecase "Approve submission" as UC10
+  usecase "Edit submission" as UC11
+  usecase "Reject submission" as UC12
+  usecase "View verified facilities" as UC13
+}
+
+visitor --> UC1
+visitor --> UC2
+visitor --> UC3
+visitor --> UC6
+visitor --> UC7
+
+UC1 ..> UC1a : <<include>>
+UC1 ..> UC1b : <<extend>>
+UC1 ..> UC2 : <<include>>
+UC3 ..> UC4 : <<extend>>
+UC3 ..> UC5 : <<extend>>
+
+admin --> UC8
+admin --> UC9
+admin --> UC13
+admin --> UC10
+admin --> UC11
+admin --> UC12
+note bottom of UC10
+  Admin actions require a valid JWT.
+  Login is a precondition, not a repeated subroutine.
+end note
+@enduml

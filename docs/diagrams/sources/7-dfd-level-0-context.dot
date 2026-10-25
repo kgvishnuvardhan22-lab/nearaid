@@ -1,0 +1,18 @@
+digraph DFD0 {
+  rankdir=LR; bgcolor=white; pad=0.3; nodesep=0.6; ranksep=1.2;
+  labelloc="t"; label="NearAid - DFD Level 0 (Context Diagram)"; fontsize=18;
+  node [fontname="Helvetica"]; edge [fontname="Helvetica" fontsize=10];
+
+  visitor [shape=box style=filled fillcolor="#dbeafe" label="Public Visitor"];
+  admin [shape=box style=filled fillcolor="#dbeafe" label="Admin"];
+  sys [shape=circle style=filled fillcolor="#ffffff" width=1.6 fixedsize=true label="0\nNearAid\nSystem"];
+
+  visitor -> sys [label="location, category, radius"];
+  sys -> visitor [label="nearby facility results\n(distance, verified badge)"];
+  visitor -> sys [label="facility suggestion"];
+  sys -> visitor [label="submission confirmation"];
+  admin -> sys [label="login credentials"];
+  sys -> admin [label="JWT session"];
+  admin -> sys [label="moderation decisions\n(approve / edit / reject)"];
+  sys -> admin [label="pending & verified lists"];
+}
