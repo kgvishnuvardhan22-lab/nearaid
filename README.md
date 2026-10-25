@@ -47,15 +47,15 @@ flowchart LR
 
 ## Diagrams
 
-The design diagrams (DFD levels 0, 1 and 2, use case, conceptual class and sequence) are in [`docs/diagrams`](docs/diagrams/README.md), as images with editable sources.
+The design diagrams (DFD levels 0, 1 and 2, use case, conceptual class and sequence) are in [`docs/diagrams`](docs/diagrams/README.md). Each one is available as an editable diagrams.net file with a PNG export, and as a text-based PlantUML/Graphviz version.
 
 | Data flow diagrams | UML diagrams |
 |---|---|
-| [DFD Level 0](docs/diagrams/images/1-dfd-level-0-context.png) | [Use case](docs/diagrams/images/4-use-case.png) |
-| [DFD Level 1](docs/diagrams/images/2-dfd-level-1.png) | [Conceptual class diagram](docs/diagrams/images/5-class-conceptual.png) |
-| [DFD Level 2](docs/diagrams/images/3-dfd-level-2-search.png) | [Sequence: find nearby facilities](docs/diagrams/images/6-sequence-find-nearby.png) |
+| [DFD Level 0](docs/diagrams/drawio/1-dfd-level-0-context.png) | [Use case](docs/diagrams/drawio/4-use-case.png) |
+| [DFD Level 1](docs/diagrams/drawio/2-dfd-level-1.png) | [Conceptual class diagram](docs/diagrams/drawio/5-class-conceptual.png) |
+| [DFD Level 2](docs/diagrams/drawio/3-dfd-level-2-search.png) | [Sequence: find nearby facilities](docs/diagrams/drawio/6-sequence-find-nearby.png) |
 
-These were rendered with PlantUML and Graphviz, not Sparx Enterprise Architect.
+They were made with diagrams.net and PlantUML/Graphviz, not Sparx Enterprise Architect.
 
 ## Project layout
 
@@ -66,7 +66,10 @@ server/            Express API
   db/              schema.sql, seed data and seed script
   tests/           Jest tests
 docs/
-  diagrams/        DFD, use case, class and sequence diagrams (images + sources)
+  diagrams/        DFD, use case, class and sequence diagrams
+    drawio/        editable diagrams.net files + PNG exports
+    images/        PlantUML/Graphviz renders
+    sources/       PlantUML/Graphviz sources
   images/          README screenshots
   manual-testing.md manual end-to-end checklist
 DEPLOYMENT.md      hosted setup (Supabase/Neon + Render + Vercel)
