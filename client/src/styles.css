@@ -1,8 +1,8 @@
-/* NearAid theme: white-and-blue, mobile-first. */
+/* NearAid theme: white-and-emerald, mobile-first. */
 :root {
-  --blue: #1565d8;
-  --blue-dark: #0e4fa8;
-  --blue-light: #e8f1fd;
+  --blue: #059669;
+  --blue-dark: #047857;
+  --blue-light: #d7f2e4;
   --text: #12233d;
   --muted: #5b6b82;
   --danger: #c62828;
@@ -12,7 +12,7 @@
 body {
   margin: 0;
   font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  background: #f5f8fd;
+  background: #f3faf6;
   color: var(--text);
 }
 .page { max-width: 640px; margin: 0 auto; padding: 16px; }
@@ -20,7 +20,7 @@ body {
 
 .hero {
   text-align: left; padding: 28px 20px 24px; margin: -16px -16px 8px;
-  background: linear-gradient(160deg, #1a6fe8 0%, #0e4fa8 70%, #0b3d86 100%);
+  background: linear-gradient(160deg, #10b981 0%, #047857 70%, #065f46 100%);
   color: #fff; border-radius: 0 0 28px 28px; position: relative; overflow: hidden;
 }
 .hero::after {
@@ -41,9 +41,9 @@ body {
   cursor: pointer; text-decoration: none; text-align: center;
 }
 .btn--primary { background: var(--blue); color: #fff; }
-.btn--big { background: #fff; color: var(--blue-dark); box-shadow: 0 8px 20px rgba(5,30,80,0.3); }
+.btn--big { background: #fff; color: var(--blue-dark); box-shadow: 0 8px 20px rgba(3,60,45,0.3); }
 .btn--primary:hover { background: var(--blue-dark); }
-.btn--big:hover { background: #f0f6ff; }
+.btn--big:hover { background: #e9f8f0; }
 .btn--big { display: block; width: 100%; padding: 18px; font-size: 1.15rem; font-weight: 800; margin-bottom: 8px; border: none; border-radius: 16px; }
 .btn--small { padding: 6px 10px; font-size: 0.85rem; }
 .btn--danger { border-color: var(--danger); color: var(--danger); }
@@ -62,7 +62,7 @@ body {
   border: 1px solid var(--blue); background: #fff; color: var(--blue);
   border-radius: 999px; padding: 8px 16px; white-space: nowrap; cursor: pointer; font-size: 0.92rem; font-weight: 600; font-family: inherit; box-shadow: 0 1px 2px rgba(18,35,61,0.06);
 }
-.chip--active { background: var(--blue); color: #fff; box-shadow: 0 4px 12px rgba(21,101,216,0.35); }
+.chip--active { background: var(--blue); color: #fff; box-shadow: 0 4px 12px rgba(5,150,105,0.35); }
 
 .results { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
 .card {
@@ -71,7 +71,7 @@ body {
   position: relative; overflow: hidden;
 }
 .card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--accent); }
-.card--hospital { --accent: #1565d8; --accent-bg: #e8f1fd; }
+.card--hospital { --accent: #059669; --accent-bg: #d7f2e4; }
 .card--blood_bank { --accent: #d6336c; --accent-bg: #fde8f0; }
 .card--pharmacy { --accent: #0f9d8a; --accent-bg: #e2f6f3; }
 .card--ambulance { --accent: #e8590c; --accent-bg: #fff0e5; }
