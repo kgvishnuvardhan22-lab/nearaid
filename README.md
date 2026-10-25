@@ -49,7 +49,7 @@ flowchart LR
 
 The design diagrams (DFD levels 0, 1 and 2, use case, conceptual class and sequence) are in [`docs/diagrams`](docs/diagrams/README.md), as images with editable sources.
 
-| | |
+| Data flow diagrams | UML diagrams |
 |---|---|
 | [DFD Level 0](docs/diagrams/images/1-dfd-level-0-context.png) | [Use case](docs/diagrams/images/4-use-case.png) |
 | [DFD Level 1](docs/diagrams/images/2-dfd-level-1.png) | [Conceptual class diagram](docs/diagrams/images/5-class-conceptual.png) |
@@ -68,7 +68,7 @@ server/            Express API
 docs/
   diagrams/        DFD, use case, class and sequence diagrams (images + sources)
   images/          README screenshots
-  manual-testing.md  manual end-to-end checklist
+  manual-testing.md manual end-to-end checklist
 DEPLOYMENT.md      hosted setup (Supabase/Neon + Render + Vercel)
 ```
 
