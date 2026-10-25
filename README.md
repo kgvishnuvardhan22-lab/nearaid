@@ -1,28 +1,78 @@
 # NearAid
 
-Find emergency help near you - hospitals, blood banks, pharmacies and
-ambulances - through a mobile-friendly website with an admin moderation panel.
+**Find emergency help near you** - hospitals, blood banks, pharmacies and ambulances - on a mobile-friendly website, with an admin panel to moderate community suggestions.
 
-**Demo build.** All seeded listings are clearly labelled SAMPLE data with
-non-callable placeholder phone numbers. Replace them with verified data before
-any real use. NearAid is a student project, not an emergency service.
+**Live demo:** https://nearaid.vercel.app/
+
+> **Demo build.** Every listing is clearly labelled SAMPLE data with non-callable placeholder phone numbers. Replace them with verified data before any real use. NearAid is a student project, not an emergency service.
+>
+> The demo API runs on a free hosting tier, so the first search after a quiet period can take a while to respond. Open the site once before a demo.
+
+<p align="center">
+  <img src="docs/images/13-home-screen.png" alt="NearAid home screen with SAMPLE facility cards near Chennai" width="720">
+</p>
+
+## Features
+
+- **Find help near me** using the browser location, or enter coordinates manually.
+- **Filter by category:** hospital, blood bank, pharmacy, ambulance.
+- **Distance-ordered results** with a verified badge and a Directions link (Google Maps).
+- **Call button** that is only active for real numbers; SAMPLE placeholders stay disabled.
+- **Suggest a facility** - submissions are stored as `pending` until an admin reviews them.
+- **Admin panel** (JWT login): review pending submissions, approve, edit or reject, and see verified facilities.
+- **Last results are cached** in the browser so they can be shown again.
+- **Read-only SAMPLE demo mode** when no database is reachable (used for tests and demos).
 
 ## Tech stack
-- **Frontend:** React 18 + Vite (browser website, mobile-first, white-and-blue)
-- **Backend:** Node.js + Express
-- **Database:** PostgreSQL + PostGIS (geometry column, GiST indexes)
-- **Auth:** JWT + bcrypt (admin panel only)
-- **Tests:** Jest + Supertest (16 tests)
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 18 + Vite, mobile-first |
+| Backend | Node.js + Express |
+| Database | PostgreSQL + PostGIS (geometry column, GiST indexes) |
+| Auth | JWT + bcrypt (admin only) |
+| Tests | Jest + Supertest (16 tests) |
+| Hosting | Vercel (frontend), Render (API), hosted PostGIS database |
+
+## How it fits together
+
+```mermaid
+flowchart LR
+  V[Visitor] --> C[React client<br/>Vercel]
+  A[Admin] --> C
+  C -->|REST /api| S[Express API<br/>Render]
+  S -->|ST_DWithin| D[(PostgreSQL + PostGIS)]
+  S -.->|database unavailable| F[SAMPLE data + Haversine<br/>read-only fallback]
+```
+
+## Diagrams
+
+The design diagrams (DFD levels 0, 1 and 2, use case, conceptual class and sequence) are in [`docs/diagrams`](docs/diagrams/README.md), as images with editable sources.
+
+| | |
+|---|---|
+| [DFD Level 0](docs/diagrams/images/1-dfd-level-0-context.png) | [Use case](docs/diagrams/images/4-use-case.png) |
+| [DFD Level 1](docs/diagrams/images/2-dfd-level-1.png) | [Conceptual class diagram](docs/diagrams/images/5-class-conceptual.png) |
+| [DFD Level 2](docs/diagrams/images/3-dfd-level-2-search.png) | [Sequence: find nearby facilities](docs/diagrams/images/6-sequence-find-nearby.png) |
+
+These were rendered with PlantUML and Graphviz, not Sparx Enterprise Architect.
 
 ## Project layout
+
 ```
-client/    React + Vite frontend
-server/    Express API, db/ (schema + seed), tests/
-docs/      manual test checklist
-DEPLOYMENT.md  hosted setup (Supabase/Neon + Render + Vercel)
+client/            React + Vite frontend (pages, components, styles)
+server/            Express API
+  src/             app, routes, middleware, utils (Haversine, nearby search)
+  db/              schema.sql, seed data and seed script
+  tests/           Jest tests
+docs/
+  diagrams/        DFD, use case, class and sequence diagrams (images + sources)
+  images/          README screenshots
+  manual-testing.md  manual end-to-end checklist
+DEPLOYMENT.md      hosted setup (Supabase/Neon + Render + Vercel)
 ```
 
-## Setup and run (local)
+## Run it locally
 
 Prerequisites: Node 18+, PostgreSQL 14+ with the PostGIS extension.
 
@@ -80,7 +130,7 @@ Security basics: parameterized SQL everywhere, bcrypt password hashes, JWT on
 admin routes, CORS restricted to the configured origin, global + login rate
 limits, validated and sanitized inputs, no secrets in code.
 
-## Architecture: why both Haversine and PostGIS
+## Why both PostGIS and Haversine
 
 The nearby search runs in **PostGIS** in production:
 `ST_DWithin(geom::geography, point, radius)` uses the functional GiST index,
